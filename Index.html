@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSAP Scroll Animation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <div class="w-full bg-zinc-600">
+        <div class="parent relative top-0 left-0 w-full h-[700vh]">
+            <div class="w-full h-screen sticky top-0 left-0">
+                <canvas class="w-full h-screen" id="frame"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- GSAP and ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <script>
+        const canvas = document.getElementById("frame");
+        const context = canvas.getContext("2d");
+
+        // Set initial canvas size
+        function setCanvasSize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        setCanvasSize();
+
+        const frame = {
+            currentIndex: 0,
+            maxIndex: 17
+        };
+
+        let imagesLoaded = 0;
+        const images = [];
+
+        function preloadImages() {
+            for (let i = 1; i <= frame.maxIndex; i++) {
+                const img = new Image();
+                img.src = `./video/image_frame/output_frame_${i.toString().padStart(4, "0")}.jpg`;
+                img.onload = () => {
+                    imagesLoaded++;
+                    if (imagesLoaded === 1) {
+                        // Load first frame as soon as the first image is ready
+                        loadImage(0);
+                    }
+                    if (imagesLoaded === frame.maxIndex) {
+                        // Start animation only after all images are loaded
+                        startAnimation();
+                    }
+                };
+                img.onerror = () => console.error(`Failed to load image: ${img.src}`);
+                images.push(img);
+            }
+        }
+
+        function loadImage(index) {
+            if (index >= 0 && index < images.length) {
+                const img = images[index];
+
+                if (!img.complete || img.naturalWidth === 0) return;
+
+                // Clear canvas
+                context.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Maintain aspect ratio while scaling
+                const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+                const newWidth = img.width * scale;
+                const newHeight = img.height * scale;
+                const offsetX = (canvas.width - newWidth) / 2;
+                const offsetY = (canvas.height - newHeight) / 2;
+
+                context.drawImage(img, offsetX, offsetY, newWidth, newHeight);
+            }
+        }
+
+        function startAnimation() {
+            gsap.to(frame, {
+                currentIndex: frame.maxIndex - 1,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: ".parent",
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: 2,
+                },
+                onUpdate: () => loadImage(Math.floor(frame.currentIndex))
+            });
+        }
+
+        window.addEventListener("resize", () => {
+            setCanvasSize();
+            loadImage(frame.currentIndex);
+        });
+
+        preloadImages();
+    </script>
+</body>
+
+</html>
