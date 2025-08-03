@@ -22,84 +22,104 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
     <script>
+        gsap.registerPlugin(ScrollTrigger);
+
         const canvas = document.getElementById("frame");
         const context = canvas.getContext("2d");
 
-        // Set initial canvas size
+        // --- Configuration ---
+        const config = {
+            // Total number of frames in the image sequence
+            frameCount: 17,
+            // Function to generate the path for each image frame.
+            // Assumes images are 1-indexed (e.g., output_frame_0001.jpg).
+            imagePath: (index) => `./video/image_frame/output_frame_${index.toString().padStart(4, "0")}.jpg`,
+            // A higher scrub value creates a smoother, more delayed "catch-up" effect.
+            scrub: 2,
+        };
+
+        // --- State ---
+        const animationState = {
+            // The current frame index being displayed, which GSAP will animate.
+            currentFrame: 0,
+        };
+        const images = []; // Array to hold all preloaded image objects
+
+        // --- Canvas Functions ---
         function setCanvasSize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
-        setCanvasSize();
 
-        const frame = {
-            currentIndex: 0,
-            maxIndex: 17
-        };
+        function drawImage(index) {
+            // Ensure index is a valid integer within the images array bounds
+            const frameIndex = Math.floor(index);
+            if (frameIndex < 0 || frameIndex >= images.length) return;
 
-        let imagesLoaded = 0;
-        const images = [];
+            const img = images[frameIndex];
+            // Ensure the image is fully loaded before attempting to draw
+            if (!img || !img.complete || img.naturalWidth === 0) return;
 
+            // Clear the canvas for the new frame
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Calculate aspect ratio to "cover" the canvas without distortion
+            const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+            const scaledWidth = img.width * scale;
+            const scaledHeight = img.height * scale;
+
+            // Center the image on the canvas
+            const offsetX = (canvas.width - scaledWidth) / 2;
+            const offsetY = (canvas.height - scaledHeight) / 2;
+
+            context.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+        }
+
+        // --- Animation Setup ---
         function preloadImages() {
-            for (let i = 1; i <= frame.maxIndex; i++) {
-                const img = new Image();
-                img.src = `./video/image_frame/output_frame_${i.toString().padStart(4, "0")}.jpg`;
-                img.onload = () => {
-                    imagesLoaded++;
-                    if (imagesLoaded === 1) {
-                        // Load first frame as soon as the first image is ready
-                        loadImage(0);
-                    }
-                    if (imagesLoaded === frame.maxIndex) {
-                        // Start animation only after all images are loaded
-                        startAnimation();
-                    }
-                };
-                img.onerror = () => console.error(`Failed to load image: ${img.src}`);
-                images.push(img);
+            const promises = [];
+            // Loop from 1 to frameCount based on file naming convention
+            for (let i = 1; i <= config.frameCount; i++) {
+                const promise = new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = () => reject(`Failed to load image: ${config.imagePath(i)}`);
+                    img.src = config.imagePath(i);
+                    images.push(img); // Add image to array for later access
+                });
+                promises.push(promise);
             }
+            return Promise.all(promises);
         }
 
-        function loadImage(index) {
-            if (index >= 0 && index < images.length) {
-                const img = images[index];
-
-                if (!img.complete || img.naturalWidth === 0) return;
-
-                // Clear canvas
-                context.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Maintain aspect ratio while scaling
-                const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-                const newWidth = img.width * scale;
-                const newHeight = img.height * scale;
-                const offsetX = (canvas.width - newWidth) / 2;
-                const offsetY = (canvas.height - newHeight) / 2;
-
-                context.drawImage(img, offsetX, offsetY, newWidth, newHeight);
-            }
-        }
-
-        function startAnimation() {
-            gsap.to(frame, {
-                currentIndex: frame.maxIndex - 1,
+        function setupScrollAnimation() {
+            gsap.to(animationState, {
+                currentFrame: config.frameCount - 1, // Animate from frame 0 to the last one
                 ease: "none",
                 scrollTrigger: {
                     trigger: ".parent",
                     start: "top top",
-                    end: "bottom top",
-                    scrub: 2,
+                    end: "bottom top", // Animate over the full height of the trigger
+                    scrub: config.scrub,
                 },
-                onUpdate: () => loadImage(Math.floor(frame.currentIndex))
+                onUpdate: () => drawImage(animationState.currentFrame),
             });
         }
 
-        window.addEventListener("resize", () => {
+        // --- Main Execution ---
+        async function main() {
             setCanvasSize();
-            loadImage(frame.currentIndex);
-        });
+            await preloadImages();
+            drawImage(0); // Draw the first frame initially
+            setupScrollAnimation();
 
-        preloadImages();
+            window.addEventListener("resize", () => {
+                setCanvasSize();
+                drawImage(animationState.currentFrame);
+            });
+        }
+
+        main();
     </script>
 </body>
 
