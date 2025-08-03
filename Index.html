@@ -1,126 +1,702 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GSAP Scroll Animation</title>
+    <title>Taste the Magic - Coca-Cola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400&family=Montserrat:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
 </head>
+<body class="bg-black">
+    <!-- Loader -->
+    <div id="loader" class="fixed inset-0 bg-zinc-900 flex flex-col justify-center items-center z-50">
+        <div class="w-1/2 max-w-xs bg-zinc-700 rounded-full h-2.5">
+            <div id="progressBar" class="bg-red-600 h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+        <p id="progressText" class="mt-4 text-white">Loading 0%</p>
+    </div>
 
-<body>
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-40 transition-all duration-500">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-white font-bold text-2xl" style="font-family: 'Bebas Neue', sans-serif;">
+                COCA-COLA
+            </div>
+            <div class="hidden md:flex space-x-8 text-white font-medium">
+                <a href="#" class="hover:text-red-400 transition-colors">Products</a>
+                <a href="#" class="hover:text-red-400 transition-colors">Stories</a>
+                <a href="#" class="hover:text-red-400 transition-colors">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Video -->
+    <section id="hero" class="relative h-screen overflow-hidden">
+        <video 
+            id="heroVideo"
+            class="absolute inset-0 w-full h-full hero-video"
+            autoplay 
+            muted 
+            loop
+            playsinline>
+            <source src="./frames/coca-cola-video.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        
+        <!-- Video Overlay -->
+        <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+        
+        <!-- Hero Content -->
+        <div class="relative z-10 h-full flex flex-col justify-center items-center text-center px-6">
+            <h1 id="heroTitle" class="text-6xl md:text-8xl font-black text-white mb-8 opacity-0" style="font-family: 'Bebas Neue', sans-serif;">
+                OPEN HAPPINESS
+            </h1>
+            
+            <!-- Scroll Indicator -->
+            <div id="scrollIndicator" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-white scroll-indicator">
+                <div class="w-6 h-10 border-2 border-white rounded-full flex justify-center">
+                    <div class="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
+                </div>
+                <p class="mt-2 text-sm font-light">Scroll to explore</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Frame Animation Section -->
     <div class="w-full bg-zinc-600">
-        <div class="parent relative top-0 left-0 w-full h-[700vh]">
+        <div class="parent relative top-0 left-0 w-full h-[1080vh]">
             <div class="w-full h-screen sticky top-0 left-0">
                 <canvas class="w-full h-screen" id="frame"></canvas>
+                
+                <!-- Text Overlays for Frame Animation -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <!-- Section 1: Unleash the Fizz -->
+                    <div id="section1" class="absolute inset-0 flex items-center justify-center opacity-0">
+                        <div class="text-center px-6">
+                            <h2 id="fizzTitle" class="text-5xl md:text-7xl font-black text-white mb-4" style="font-family: 'Bebas Neue', sans-serif;">
+                                <span class="letter">U</span><span class="letter">N</span><span class="letter">L</span><span class="letter">E</span><span class="letter">A</span><span class="letter">S</span><span class="letter">H</span>
+                                <br>
+                                <span class="letter text-red-500">T</span><span class="letter text-red-500">H</span><span class="letter text-red-500">E</span>
+                                <span class="letter text-red-500">F</span><span class="letter text-red-500">I</span><span class="letter text-red-500">Z</span><span class="letter text-red-500">Z</span>
+                            </h2>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Feel the Spark -->
+                    <div id="section2" class="absolute inset-0 flex items-center justify-center opacity-0">
+                        <div id="particleCanvas" class="absolute inset-0 fizz-bg"></div>
+                        <div class="relative z-10 text-center px-6">
+                            <h2 id="sparkTitle" class="text-5xl md:text-7xl font-black text-white text-glow" style="font-family: 'Bebas Neue', sans-serif;">
+                                FEEL THE SPARK
+                            </h2>
+                            <p id="sparkSubtitle" class="text-xl md:text-2xl text-gray-300 mt-6 font-light">
+                                Every bubble tells a story
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: A Sip of Joy -->
+                    <div id="section3" class="absolute inset-0 flex items-center justify-center opacity-0">
+                        <div class="text-center px-6">
+                            <h2 id="joyTitle" class="text-5xl md:text-7xl font-black text-white" style="font-family: 'Bebas Neue', sans-serif;">
+                                A SIP OF
+                                <span class="text-red-500 text-glow">JOY</span>
+                            </h2>
+                            <p id="joySubtitle" class="text-xl md:text-2xl text-gray-300 mt-6 font-light">
+                                Refreshment redefined
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Taste the Magic -->
+                    <div id="section4" class="absolute inset-0 flex flex-col items-center justify-center opacity-0">
+                        <div class="text-center px-6">
+                            <h2 id="magicTitle" class="text-6xl md:text-9xl font-black text-white text-glow mb-12" style="font-family: 'Bebas Neue', sans-serif;">
+                                TASTE THE
+                                <span class="text-red-500">MAGIC</span>
+                            </h2>
+                            
+                            <button id="ctaButton" class="px-12 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold text-lg rounded-full transition-all duration-300 hover:scale-110 cta-glow pointer-events-auto" style="font-family: 'Montserrat', sans-serif;">
+                                EXPLORE MORE
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- GSAP and ScrollTrigger -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <!-- Footer Section -->
+    <footer class="bg-black text-white py-16 px-6">
+        <div class="container mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4" style="font-family: 'Bebas Neue', sans-serif;">COCA-COLA</h3>
+                    <p class="text-gray-400">Taste the feeling. Share the magic.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Products</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-red-400 transition-colors">Coca-Cola Original</a></li>
+                        <li><a href="#" class="hover:text-red-400 transition-colors">Coca-Cola Zero</a></li>
+                        <li><a href="#" class="hover:text-red-400 transition-colors">Diet Coke</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-red-400 transition-colors">About Us</a></li>
+                        <li><a href="#" class="hover:text-red-400 transition-colors">Careers</a></li>
+                        <li><a href="#" class="hover:text-red-400 transition-colors">Sustainability</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Connect</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-colors">
+                            <span class="text-sm font-bold">f</span>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-colors">
+                            <span class="text-sm font-bold">t</span>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-colors">
+                            <span class="text-sm font-bold">i</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 The Coca-Cola Company. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <script>
-        gsap.registerPlugin(ScrollTrigger);
+        gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
         const canvas = document.getElementById("frame");
         const context = canvas.getContext("2d");
 
+        // --- Loader Elements ---
+        const loader = document.getElementById("loader");
+        const progressBar = document.getElementById("progressBar");
+        const progressText = document.getElementById("progressText");
+
         // --- Configuration ---
         const config = {
-            // Total number of frames in the image sequence
-            frameCount: 17,
-            // Function to generate the path for each image frame.
-            // Assumes images are 1-indexed (e.g., output_frame_0001.jpg).
-            imagePath: (index) => `./video/image_frame/output_frame_${index.toString().padStart(4, "0")}.jpg`,
-            // A higher scrub value creates a smoother, more delayed "catch-up" effect.
-            scrub: 2,
+            frameCount: 816,
+            imagePath: (index) => `./frames/frame_${index.toString().padStart(5, "0")}.png`,
+            scrub: 0.1,
         };
 
         // --- State ---
         const animationState = {
-            // The current frame index being displayed, which GSAP will animate.
             currentFrame: 0,
         };
-        const images = []; // Array to hold all preloaded image objects
+        const images = [];
 
-        // --- Canvas Functions ---
-        function setCanvasSize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
+        // Optimized drawing with throttling
+        let lastDrawnFrame = -1;
+        let isDrawing = false;
+        let pendingFrame = null;
+        
         function drawImage(index) {
-            // Ensure index is a valid integer within the images array bounds
-            const frameIndex = Math.floor(index);
-            if (frameIndex < 0 || frameIndex >= images.length) return;
+            const frameIndex = Math.max(1, Math.min(Math.round(index), config.frameCount));
+            
+            if (frameIndex === lastDrawnFrame || isDrawing) {
+                pendingFrame = frameIndex;
+                return;
+            }
+            
+            lastDrawnFrame = frameIndex;
+            pendingFrame = null;
+            isDrawing = true;
+            
+            const imgIndex = frameIndex - 1;
+            
+            if (imgIndex < 0 || imgIndex >= images.length) {
+                isDrawing = false;
+                return;
+            }
 
-            const img = images[frameIndex];
-            // Ensure the image is fully loaded before attempting to draw
-            if (!img || !img.complete || img.naturalWidth === 0) return;
+            const img = images[imgIndex];
+            if (!img || !img.complete || img.naturalWidth === 0) {
+                isDrawing = false;
+                return;
+            }
 
-            // Clear the canvas for the new frame
-            context.clearRect(0, 0, canvas.width, canvas.height);
+            requestAnimationFrame(() => {
+                context.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Calculate aspect ratio to "cover" the canvas without distortion
-            const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-            const scaledWidth = img.width * scale;
-            const scaledHeight = img.height * scale;
+                const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+                const scaledWidth = img.width * scale;
+                const scaledHeight = img.height * scale;
 
-            // Center the image on the canvas
-            const offsetX = (canvas.width - scaledWidth) / 2;
-            const offsetY = (canvas.height - scaledHeight) / 2;
+                const offsetX = (canvas.width - scaledWidth) / 2;
+                const offsetY = (canvas.height - scaledHeight) / 2;
 
-            context.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+                context.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+                
+                isDrawing = false;
+                
+                if (pendingFrame !== null && pendingFrame !== lastDrawnFrame) {
+                    drawImage(pendingFrame);
+                }
+            });
         }
 
-        // --- Animation Setup ---
+        function setCanvasSize() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            
+            context.scale(dpr, dpr);
+        }
+
         function preloadImages() {
+            let loadedCount = 0;
             const promises = [];
-            // Loop from 1 to frameCount based on file naming convention
+            
             for (let i = 1; i <= config.frameCount; i++) {
                 const promise = new Promise((resolve, reject) => {
                     const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = () => reject(`Failed to load image: ${config.imagePath(i)}`);
+                    img.onload = () => {
+                        loadedCount++;
+                        const progress = Math.floor((loadedCount / config.frameCount) * 100);
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `Loading ${progress}%`;
+                        resolve(img);
+                    };
+                    img.onerror = () => {
+                        console.warn(`Failed to load: ${config.imagePath(i)}`);
+                        resolve(null);
+                    };
                     img.src = config.imagePath(i);
-                    images.push(img); // Add image to array for later access
                 });
                 promises.push(promise);
             }
-            return Promise.all(promises);
+            
+            return Promise.all(promises).then(loadedImages => {
+                const validImages = loadedImages.filter(img => img !== null);
+                images.push(...validImages);
+                return validImages;
+            });
         }
 
         function setupScrollAnimation() {
             gsap.to(animationState, {
-                currentFrame: config.frameCount - 1, // Animate from frame 0 to the last one
+                currentFrame: config.frameCount,
                 ease: "none",
                 scrollTrigger: {
                     trigger: ".parent",
                     start: "top top",
-                    end: "bottom top", // Animate over the full height of the trigger
+                    end: "bottom top",
                     scrub: config.scrub,
+                    refreshPriority: -1,
+                    invalidateOnRefresh: false,
                 },
                 onUpdate: () => drawImage(animationState.currentFrame),
             });
         }
 
-        // --- Main Execution ---
+        function initTextAnimations() {
+            // Hero title animation
+            gsap.fromTo("#heroTitle", {
+                opacity: 0,
+                scale: 0.8,
+                y: 50
+            }, {
+                opacity: 1,
+                scale: 1,
+                y: 0,
+                duration: 2,
+                ease: "power3.out",
+                delay: 0.5
+            });
+
+            // Scroll indicator fade out
+            gsap.to("#scrollIndicator", {
+                opacity: 0,
+                scrollTrigger: {
+                    trigger: "#hero",
+                    start: "bottom 80%",
+                    end: "bottom 60%",
+                    scrub: true
+                }
+            });
+
+            // Section transitions with immediate replacement
+            ScrollTrigger.create({
+                trigger: ".parent",
+                start: "top bottom",
+                end: "25% bottom",
+                onEnter: () => {
+                    gsap.set(["#section2", "#section3", "#section4"], { opacity: 0 });
+                    gsap.to("#section1", { opacity: 1, duration: 0.5 });
+                },
+                onLeave: () => {
+                    gsap.to("#section1", { opacity: 0, duration: 0.3 });
+                }
+            });
+
+            ScrollTrigger.create({
+                trigger: ".parent",
+                start: "25% bottom",
+                end: "50% bottom",
+                onEnter: () => {
+                    gsap.set(["#section1", "#section3", "#section4"], { opacity: 0 });
+                    gsap.to("#section2", { opacity: 1, duration: 0.5 });
+                },
+                onLeave: () => {
+                    gsap.to("#section2", { opacity: 0, duration: 0.3 });
+                },
+                onEnterBack: () => {
+                    gsap.set(["#section1", "#section3", "#section4"], { opacity: 0 });
+                    gsap.to("#section2", { opacity: 1, duration: 0.5 });
+                }
+            });
+
+            ScrollTrigger.create({
+                trigger: ".parent",
+                start: "50% bottom",
+                end: "75% bottom",
+                onEnter: () => {
+                    gsap.set(["#section1", "#section2", "#section4"], { opacity: 0 });
+                    gsap.to("#section3", { opacity: 1, duration: 0.5 });
+                },
+                onLeave: () => {
+                    gsap.to("#section3", { opacity: 0, duration: 0.3 });
+                },
+                onEnterBack: () => {
+                    gsap.set(["#section1", "#section2", "#section4"], { opacity: 0 });
+                    gsap.to("#section3", { opacity: 1, duration: 0.5 });
+                }
+            });
+
+            ScrollTrigger.create({
+                trigger: ".parent",
+                start: "75% bottom",
+                end: "bottom top",
+                onEnter: () => {
+                    gsap.set(["#section1", "#section2", "#section3"], { opacity: 0 });
+                    gsap.to("#section4", { opacity: 1, duration: 0.5 });
+                },
+                onEnterBack: () => {
+                    gsap.set(["#section1", "#section2", "#section3"], { opacity: 0 });
+                    gsap.to("#section4", { opacity: 1, duration: 0.5 });
+                }
+            });
+
+            // Letter animations for fizz title
+            gsap.fromTo("#fizzTitle .letter", {
+                opacity: 0,
+                y: 100,
+                rotationX: 90
+            }, {
+                opacity: 1,
+                y: 0,
+                rotationX: 0,
+                duration: 0.8,
+                stagger: 0.1,
+                ease: "back.out(1.7)",
+                scrollTrigger: {
+                    trigger: ".parent",
+                    start: "5% bottom",
+                    end: "20% bottom",
+                    toggleActions: "play none none reverse"
+                }
+            });
+        }
+
+        function createParticles() {
+            const particleContainer = document.getElementById('particleCanvas');
+            
+            function addParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                
+                particleContainer.appendChild(particle);
+                
+                gsap.fromTo(particle, {
+                    scale: 0,
+                    opacity: 0
+                }, {
+                    scale: Math.random() * 2 + 1,
+                    opacity: 1,
+                    duration: 0.5,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        gsap.to(particle, {
+                            scale: 0,
+                            opacity: 0,
+                            duration: 1,
+                            delay: Math.random() * 2,
+                            onComplete: () => particle.remove()
+                        });
+                    }
+                });
+            }
+
+            ScrollTrigger.create({
+                trigger: ".parent",
+                start: "30% bottom",
+                end: "50% bottom",
+                onEnter: () => {
+                    const interval = setInterval(addParticle, 200);
+                    setTimeout(() => clearInterval(interval), 2000);
+                },
+                onLeave: () => {
+                    // Clear existing particles
+                    const particles = particleContainer.querySelectorAll('.particle');
+                    particles.forEach(p => p.remove());
+                }
+            });
+        }
+
+        function setupNavigation() {
+            gsap.to("#navbar", {
+                className: "fixed top-0 left-0 w-full z-40 transition-all duration-500 nav-blur",
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "100px top",
+                    end: "200px top",
+                    scrub: true
+                }
+            });
+        }
+
+        // Enhanced main execution
         async function main() {
             setCanvasSize();
             await preloadImages();
-            drawImage(0); // Draw the first frame initially
-            setupScrollAnimation();
 
+            // Fade out loader with enhanced animation
+            gsap.to(loader, {
+                opacity: 0,
+                scale: 0.8,
+                duration: 0.8,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    loader.style.display = "none";
+                }
+            });
+
+            drawImage(1);
+            setupScrollAnimation();
+            initTextAnimations();
+            enhanceTextAnimations();
+            createParticles();
+            setupNavigation();
+            createFloatingBubbles();
+            setupMagneticButtons();
+            addScrollToTop();
+
+            // Enhanced resize handler
+            let resizeTimeout;
             window.addEventListener("resize", () => {
-                setCanvasSize();
-                drawImage(animationState.currentFrame);
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    setCanvasSize();
+                    drawImage(animationState.currentFrame);
+                    ScrollTrigger.refresh();
+                }, 100);
+            });
+        }
+
+        // CTA Button interaction
+        document.getElementById('ctaButton').addEventListener('click', function() {
+            gsap.to(this, {
+                scale: 0.95,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1
+            });
+        });
+
+        // Video fallback handling
+        const video = document.getElementById('heroVideo');
+        video.addEventListener('error', function() {
+            const fallback = document.createElement('div');
+            fallback.className = 'absolute inset-0 bg-gradient-to-br from-black via-red-900 to-black';
+            video.parentNode.insertBefore(fallback, video);
+            video.style.display = 'none';
+        });
+
+        // Add floating bubbles background
+        function createFloatingBubbles() {
+            const bubblesContainer = document.createElement('div');
+            bubblesContainer.className = 'floating-bubbles';
+            document.body.appendChild(bubblesContainer);
+            
+            function createBubble() {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                
+                const size = Math.random() * 60 + 20;
+                bubble.style.width = size + 'px';
+                bubble.style.height = size + 'px';
+                bubble.style.left = Math.random() * 100 + '%';
+                bubble.style.animationDelay = Math.random() * 15 + 's';
+                bubble.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                
+                bubblesContainer.appendChild(bubble);
+                
+                setTimeout(() => {
+                    bubble.remove();
+                }, 25000);
+            }
+            
+            // Create initial bubbles
+            for (let i = 0; i < 5; i++) {
+                setTimeout(createBubble, i * 3000);
+            }
+            
+            // Continue creating bubbles
+            setInterval(createBubble, 4000);
+        }
+
+        // Enhanced magnetic button effect
+        function setupMagneticButtons() {
+            const buttons = document.querySelectorAll('#ctaButton, nav a');
+            
+            buttons.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    gsap.to(this, {
+                        scale: 1.05,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    });
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    gsap.to(this, {
+                        scale: 1,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    });
+                });
+                
+                btn.addEventListener('mousemove', function(e) {
+                    const rect = this.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    
+                    gsap.to(this, {
+                        x: x * 0.1,
+                        y: y * 0.1,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    });
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    gsap.to(this, {
+                        x: 0,
+                        y: 0,
+                        duration: 0.5,
+                        ease: "elastic.out(1, 0.3)"
+                    });
+                });
+            });
+        }
+
+        // Enhanced text animations with stagger effects
+        function enhanceTextAnimations() {
+            // Stagger animation for section titles
+            gsap.fromTo("#sparkTitle", {
+                opacity: 0,
+                y: 50,
+                scale: 0.8
+            }, {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                duration: 1,
+                ease: "back.out(1.7)",
+                scrollTrigger: {
+                    trigger: ".parent",
+                    start: "30% bottom",
+                    end: "35% bottom",
+                    toggleActions: "play none none reverse"
+                }
+            });
+
+            gsap.fromTo("#joyTitle", {
+                opacity: 0,
+                rotationY: 90
+            }, {
+                opacity: 1,
+                rotationY: 0,
+                duration: 1,
+                ease: "power3.out",
+                scrollTrigger: {
+                    trigger: ".parent",
+                    start: "55% bottom",
+                    end: "60% bottom",
+                    toggleActions: "play none none reverse"
+                }
+            });
+
+            gsap.fromTo("#magicTitle", {
+                opacity: 0,
+                scale: 0.5,
+                rotation: -10
+            }, {
+                opacity: 1,
+                scale: 1,
+                rotation: 0,
+                duration: 1.2,
+                ease: "elastic.out(1, 0.3)",
+                scrollTrigger: {
+                    trigger: ".parent",
+                    start: "80% bottom",
+                    end: "85% bottom",
+                    toggleActions: "play none none reverse"
+                }
+            });
+        }
+
+        // Smooth scroll to top functionality
+        function addScrollToTop() {
+            const scrollBtn = document.createElement('button');
+            scrollBtn.innerHTML = '↑';
+            scrollBtn.className = 'fixed bottom-8 right-8 w-12 h-12 bg-red-600 text-white rounded-full font-bold text-xl opacity-0 pointer-events-none transition-all duration-300 hover:bg-red-700 z-50';
+            scrollBtn.id = 'scrollToTop';
+            document.body.appendChild(scrollBtn);
+            
+            gsap.to(scrollBtn, {
+                opacity: 1,
+                pointerEvents: 'auto',
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "200px top",
+                    end: "bottom bottom",
+                    toggleActions: "play none none reverse"
+                }
+            });
+            
+            scrollBtn.addEventListener('click', () => {
+                gsap.to(window, {
+                    scrollTo: 0,
+                    duration: 1.5,
+                    ease: "power2.inOut"
+                });
             });
         }
 
         main();
     </script>
 </body>
-
 </html>
